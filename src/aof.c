@@ -213,7 +213,7 @@ void freeFakeClient(struct redisClient *c) {
 /* Replay the append log file. On error REDIS_OK is returned. On non fatal
  * error (the append only file is zero-length) REDIS_ERR is returned. On
  * fatal error an error message is logged and the program exists. */
-int loadAppendOnlyFile(char *filename) {
+int loadAppendOnlyFile(char *filename) {  // 重放所有命令
     struct redisClient *fakeClient;
     FILE *fp = fopen(filename,"r");
     struct redis_stat sb;
@@ -233,6 +233,7 @@ int loadAppendOnlyFile(char *filename) {
     /* Temporarily disable AOF, to prevent EXEC from feeding a MULTI
      * to the same file we're about to read. */
     server.appendonly = 0;
+    // TODO: 这里为什么要临时关闭，有一点应该是防止在恢复过程中接收的命令也被写入，但是跟 EXEC 有什么关系？
 
     fakeClient = createFakeClient();
     startLoading(fp);

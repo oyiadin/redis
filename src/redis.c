@@ -69,6 +69,7 @@ double R_Zero, R_PosInf, R_NegInf, R_Nan;
 /* Global vars */
 struct redisServer server; /* server global state */
 struct redisCommand *commandTable;
+// LOL, 命令到函数以及其他信息的映射表
 struct redisCommand readonlyCommandTable[] = {
     {"get",getCommand,2,0,NULL,1,1,1},
     {"set",setCommand,3,REDIS_CMD_DENYOOM,NULL,0,0,0},
@@ -759,6 +760,7 @@ void createSharedObjects(void) {
 }
 
 void initServerConfig() {
+    // server 是一个全局的服务器状态结构体
     server.port = REDIS_SERVERPORT;
     server.bindaddr = NULL;
     server.unixsocket = NULL;
@@ -843,7 +845,7 @@ void initServer() {
     int j;
 
     signal(SIGHUP, SIG_IGN);
-    signal(SIGPIPE, SIG_IGN);
+    signal(SIGPIPE, SIG_IGN);  // TODO: 常见signal含义
     setupSignalHandlers();
 
     if (server.syslog_enabled) {
@@ -859,6 +861,7 @@ void initServer() {
     createSharedObjects();
     server.el = aeCreateEventLoop();
     server.db = zmalloc(sizeof(redisDb)*server.dbnum);
+    // db 数量由配置定死
 
     if (server.port != 0) {
         server.ipfd = anetTcpServer(server.neterr,server.port,server.bindaddr);
@@ -922,7 +925,8 @@ void initServer() {
         }
     }
 
-    if (server.vm_enabled) vmInit();
+    if (server.vm_enabled) vmInit();  // 根据配置文件，2.4 里已将 vm 机制淘汰，暂时不读
+    // vm 机制类似操作系统的 swap 机制
     slowlogInit();
     srand(time(NULL)^getpid());
 }
@@ -937,7 +941,7 @@ void populateCommandTable(void) {
         struct redisCommand *c = readonlyCommandTable+j;
         int retval;
 
-        retval = dictAdd(server.commands, sdsnew(c->name), c);
+        retval = dictAdd(server.commands, sdsnew(c->name), c);  // 在硬编码的映射表的基础上建立字典
         assert(retval == DICT_OK);
     }
 }
@@ -985,7 +989,7 @@ void call(redisClient *c) {
  * If 1 is returned the client is still alive and valid and
  * and other operations can be performed by the caller. Otherwise
  * if 0 is returned the client was destroied (i.e. after QUIT). */
-int processCommand(redisClient *c) {
+int processCommand(redisClient *c) {  // 命令处理
     /* The QUIT command is handled separately. Normal command procs will
      * go through checking for replication and QUIT will cause trouble
      * when FORCE_REPLICATION is enabled and would be implemented in
@@ -1527,6 +1531,7 @@ void daemonize(void) {
 
     if (fork() != 0) exit(0); /* parent exits */
     setsid(); /* create a new session */
+    // 守护进程创建方法：fork() 出子进程后在子进程 setsid() 创建新会话
 
     /* Every output goes to /dev/null. If Redis is daemonized but
      * the 'logfile' is set to 'stdout' in the configuration file
@@ -1551,7 +1556,7 @@ void usage() {
     exit(1);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv) {  // redis-server 入口
     time_t start;
 
     initServerConfig();
@@ -1559,7 +1564,7 @@ int main(int argc, char **argv) {
         if (strcmp(argv[1], "-v") == 0 ||
             strcmp(argv[1], "--version") == 0) version();
         if (strcmp(argv[1], "--help") == 0) usage();
-        resetServerSaveParams();
+        resetServerSaveParams();  // TODO: 为什么要free掉server.saveparams（初始化为NULL）
         loadServerConfig(argv[1]);
     } else if ((argc > 2)) {
         usage();

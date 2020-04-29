@@ -184,6 +184,7 @@
 
 /* Anti-warning macro... */
 #define REDIS_NOTUSED(V) ((void) V)
+// trick learnt
 
 #define ZSKIPLIST_MAXLEVEL 32 /* Should be enough for 2^32 elements */
 #define ZSKIPLIST_P 0.25      /* Skiplist P = 1/4 */
@@ -274,7 +275,8 @@ typedef struct vmPointer {
     _var.storage = REDIS_VM_MEMORY; \
 } while(0);
 
-typedef struct redisDb {
+typedef struct redisDb {  // 惊了，原来底层也用的一样的 dict 结构
+    // 每个 db 都由以下五大 HashMap 组成，包括 timeout 其实跟普通的值都一样是 k-v 结构
     dict *dict;                 /* The keyspace for this DB */
     dict *expires;              /* Timeout of keys with a timeout set */
     dict *blocking_keys;        /* Keys with clients waiting for data (BLPOP) */

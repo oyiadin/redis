@@ -309,7 +309,7 @@ int aeProcessEvents(aeEventLoop *eventLoop, int flags)
             if (tvp->tv_usec < 0) tvp->tv_usec = 0;
         } else {
             /* If we have to check for events but need to return
-             * ASAP because of AE_DONT_WAIT we need to se the timeout
+             * ASAP because of AE_DONT_WAIT we need to set the timeout
              * to zero */
             if (flags & AE_DONT_WAIT) {
                 tv.tv_sec = tv.tv_usec = 0;
@@ -373,6 +373,7 @@ int aeWait(int fd, int mask, long long milliseconds) {
 }
 
 void aeMain(aeEventLoop *eventLoop) {
+    // 事件驱动，主循环，每次处理事件之前都会调用 beforesleep
     eventLoop->stop = 0;
     while (!eventLoop->stop) {
         if (eventLoop->beforesleep != NULL)

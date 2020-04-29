@@ -46,7 +46,7 @@ typedef struct dictEntry {
     void *key;
     void *val;
     struct dictEntry *next;
-} dictEntry;
+} dictEntry;  // 单链表
 
 typedef struct dictType {
     unsigned int (*hashFunction)(const void *key);
@@ -55,19 +55,19 @@ typedef struct dictType {
     int (*keyCompare)(void *privdata, const void *key1, const void *key2);
     void (*keyDestructor)(void *privdata, void *key);
     void (*valDestructor)(void *privdata, void *obj);
-} dictType;
+} dictType;  // TODO: 对应着每个类型独特的操作，但是具体被用在哪些场景下我还不清楚
 
 /* This is our hash table structure. Every dictionary has two of this as we
  * implement incremental rehashing, for the old to the new table. */
 typedef struct dictht {
-    dictEntry **table;
+    dictEntry **table;  // table 是一个数组，每个数据项都是指向链表头/NULL，结构类似 HashMap
     unsigned long size;
     unsigned long sizemask;
     unsigned long used;
 } dictht;
 
 typedef struct dict {
-    dictType *type;
+    dictType *type;  // 类型相关的相关函数指针
     void *privdata;
     dictht ht[2];
     int rehashidx; /* rehashing not in progress if rehashidx == -1 */

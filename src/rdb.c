@@ -856,7 +856,7 @@ void startLoading(FILE *fp) {
     if (fstat(fileno(fp), &sb) == -1) {
         server.loading_total_bytes = 1; /* just to avoid division by zero */
     } else {
-        server.loading_total_bytes = sb.st_size;
+        server.loading_total_bytes = sb.st_size;  // 文件大小
     }
 }
 
