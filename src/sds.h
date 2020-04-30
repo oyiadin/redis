@@ -38,7 +38,7 @@ typedef char *sds;
 
 struct sdshdr {
     int len;
-    int free;
+    int free;  // 已分配的空间中空闲的长度
     char buf[];
 };
 

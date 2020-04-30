@@ -7,6 +7,7 @@ typedef struct intset {
     uint32_t length;
     int8_t contents[];
 } intset;
+// 我觉得这种设计还挺像 ziplist 的，很紧凑
 
 intset *intsetNew(void);
 intset *intsetAdd(intset *is, int64_t value, uint8_t *success);

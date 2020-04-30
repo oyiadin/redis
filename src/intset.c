@@ -54,7 +54,7 @@ intset *intsetNew(void) {
 /* Resize the intset */
 static intset *intsetResize(intset *is, uint32_t len) {
     uint32_t size = len*is->encoding;
-    is = zrealloc(is,sizeof(intset)+size);
+    is = zrealloc(is,sizeof(intset)+size);  // 把 contents 放在最后的便利
     return is;
 }
 
@@ -73,7 +73,7 @@ static uint8_t intsetSearch(intset *is, int64_t value, uint32_t *pos) {
     } else {
         /* Check for the case where we know we cannot find the value,
          * but do know the insert position. */
-        if (value > _intsetGet(is,is->length-1)) {
+        if (value > _intsetGet(is,is->length-1)) {  // intset 居然是有序的么
             if (pos) *pos = is->length;
             return 0;
         } else if (value < _intsetGet(is,0)) {
@@ -82,7 +82,7 @@ static uint8_t intsetSearch(intset *is, int64_t value, uint32_t *pos) {
         }
     }
 
-    while(max >= min) {
+    while (max >= min) {
         mid = (min+max)/2;
         cur = _intsetGet(is,mid);
         if (value > cur) {
@@ -108,7 +108,7 @@ static intset *intsetUpgradeAndAdd(intset *is, int64_t value) {
     uint8_t curenc = is->encoding;
     uint8_t newenc = _intsetValueEncoding(value);
     int length = is->length;
-    int prepend = value < 0 ? 1 : 0;
+    int prepend = value < 0 ? 1 : 0;  // 在最开头还是最后留出一个空，给新插入的值
 
     /* First set new encoding and resize */
     is->encoding = newenc;
@@ -124,11 +124,14 @@ static intset *intsetUpgradeAndAdd(intset *is, int64_t value) {
     if (prepend)
         _intsetSet(is,0,value);
     else
-        _intsetSet(is,is->length,value);
+        _intsetSet(is,is->length,value);  // 这明明是瞎插的啊，为什么上边 search 默认有序
+        // 哦懂了，这个函数唯一被调用的地方是 intsetAdd，当需要升级类型时被调用
+        // 类型都需要升级了，当然是大于或小于现有的任何数据了
     is->length++;
     return is;
 }
 
+// 从 from 开始直到 list 结尾的这段内存将被移动到新地址（一般只是往后或往前挪一个元素长度）
 static void intsetMoveTail(intset *is, uint32_t from, uint32_t to) {
     void *src, *dst;
     uint32_t bytes = is->length-from;
@@ -146,6 +149,7 @@ static void intsetMoveTail(intset *is, uint32_t from, uint32_t to) {
         bytes *= sizeof(int16_t);
     }
     memmove(dst,src,bytes);
+    // 相对于 memcpy，memmove 可以处理好前后位置重叠的问题
 }
 
 /* Insert an integer in the intset */
@@ -164,16 +168,16 @@ intset *intsetAdd(intset *is, int64_t value, uint8_t *success) {
         /* Abort if the value is already present in the set.
          * This call will populate "pos" with the right position to insert
          * the value when it cannot be found. */
-        if (intsetSearch(is,value,&pos)) {
+        if (intsetSearch(is,value,&pos)) {  // intset 的元素居然不能重复
             if (success) *success = 0;
             return is;
         }
 
-        is = intsetResize(is,is->length+1);
+        is = intsetResize(is,is->length+1);  // 不一次性多预留一些空间么
         if (pos < is->length) intsetMoveTail(is,pos,pos+1);
     }
 
-    _intsetSet(is,pos,value);
+    _intsetSet(is,pos,value);  // 仍保持有序
     is->length++;
     return is;
 }

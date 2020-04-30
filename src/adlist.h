@@ -49,7 +49,7 @@ typedef struct list {
     listNode *tail;
     void *(*dup)(void *ptr);
     void (*free)(void *ptr);
-    int (*match)(void *ptr, void *key);
+    int (*match)(void *ptr, void *key);  // 以上三个函数都是用来处理 listNode.value 的
     unsigned int len;
 } list;
 

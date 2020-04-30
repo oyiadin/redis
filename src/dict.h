@@ -46,7 +46,7 @@ typedef struct dictEntry {
     void *key;
     void *val;
     struct dictEntry *next;
-} dictEntry;  // 单链表
+} dictEntry;  // 单链表的一个 Node
 
 typedef struct dictType {
     unsigned int (*hashFunction)(const void *key);

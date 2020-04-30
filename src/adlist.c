@@ -71,7 +71,7 @@ void listRelease(list *list)
     zfree(list);
 }
 
-/* Add a new node to the list, to head, contaning the specified 'value'
+/* Add a new node to the list, to head, containing the specified 'value'
  * pointer as value.
  *
  * On error, NULL is returned and no operation is performed (i.e. the
@@ -97,7 +97,7 @@ list *listAddNodeHead(list *list, void *value)
     return list;
 }
 
-/* Add a new node to the list, to tail, contaning the specified 'value'
+/* Add a new node to the list, to tail, containing the specified 'value'
  * pointer as value.
  *
  * On error, NULL is returned and no operation is performed (i.e. the
@@ -156,6 +156,7 @@ list *listInsertNode(list *list, listNode *old_node, void *value, int after) {
  * It's up to the caller to free the private value of the node.
  *
  * This function can't fail. */
+// TODO: `private value` 究竟指的啥，我看 list 相关的结构体都没有这种设计呀
 void listDelNode(list *list, listNode *node)
 {
     if (node->prev)
@@ -209,7 +210,7 @@ void listRewindTail(list *list, listIter *li) {
  * listDelNode(), but not to remove other elements.
  *
  * The function returns a pointer to the next element of the list,
- * or NULL if there are no more elements, so the classical usage patter
+ * or NULL if there are no more elements, so the classical usage pattern
  * is:
  *
  * iter = listGetIterator(list,<direction>);
@@ -262,7 +263,8 @@ list *listDup(list *orig)
                 return NULL;
             }
         } else
-            value = node->value;
+            value = node->value;  // 真不会造成问题吗，万一就被另外一个 list 给 free 了
+            // TODO: 似乎只在 slave 机制下用到了这个函数，之后读到了再看
         if (listAddNodeTail(copy, value) == NULL) {
             listRelease(copy);
             listReleaseIterator(iter);
@@ -280,9 +282,10 @@ list *listDup(list *orig)
  * compared with the 'key' pointer.
  *
  * On success the first matching node pointer is returned
+ * --> list 的值是可以重复的，毕竟就是一个普通的双向链表
  * (search starts from head). If no matching node exists
  * NULL is returned. */
-listNode *listSearchKey(list *list, void *key)
+listNode *listSearchKey(list *list, void *key)  // 其实比较的也不叫 key，应该是 value 比较合适
 {
     listIter *iter;
     listNode *node;
@@ -295,7 +298,7 @@ listNode *listSearchKey(list *list, void *key)
                 return node;
             }
         } else {
-            if (key == node->value) {
+            if (key == node->value) {  // 嚯，直接比较指针…
                 listReleaseIterator(iter);
                 return node;
             }
@@ -308,7 +311,7 @@ listNode *listSearchKey(list *list, void *key)
 /* Return the element at the specified zero-based index
  * where 0 is the head, 1 is the element next to head
  * and so on. Negative integers are used in order to count
- * from the tail, -1 is the last element, -2 the penultimante
+ * from the tail, -1 is the last element, -2 the penultimate
  * and so on. If the index is out of range NULL is returned. */
 listNode *listIndex(list *list, int index) {
     listNode *n;
@@ -320,6 +323,7 @@ listNode *listIndex(list *list, int index) {
     } else {
         n = list->head;
         while(index-- && n) n = n->next;
+        // 下标溢出的时候也不报错，直接返回空（最新版本还是没改，认为没必要吧）
     }
     return n;
 }

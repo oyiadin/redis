@@ -46,7 +46,7 @@ robj *lookupKey(redisDb *db, robj *key) {
 }
 
 robj *lookupKeyRead(redisDb *db, robj *key) {
-    expireIfNeeded(db,key);
+    expireIfNeeded(db,key);  // 惰性删除
     return lookupKey(db,key);
 }
 

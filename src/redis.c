@@ -966,7 +966,7 @@ void call(redisClient *c) {
     long long dirty, start = ustime(), duration;
 
     dirty = server.dirty;
-    c->cmd->proc(c);
+    c->cmd->proc(c);  // 调用对应命令的处理函数
     dirty = server.dirty-dirty;
     duration = ustime()-start;
     slowlogPushEntryIfNeeded(c->argv,c->argc,duration);
