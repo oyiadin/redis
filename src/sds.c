@@ -197,7 +197,7 @@ sds sdscatvprintf(sds s, const char *fmt, va_list ap) {
         vsnprintf(buf, buflen, fmt, cpy);
         if (buf[buflen-2] != '\0') {
             zfree(buf);
-            buflen *= 2;
+            buflen *= 2;  // 这个倍增猜测大小的小 trick 学学
             continue;
         }
         break;
@@ -216,6 +216,7 @@ sds sdscatprintf(sds s, const char *fmt, ...) {
     return t;
 }
 
+// s.strip(cset)
 sds sdstrim(sds s, const char *cset) {
     struct sdshdr *sh = (void*) (s-(sizeof(struct sdshdr)));
     char *start, *end, *sp, *ep;
@@ -393,7 +394,7 @@ sds sdsfromlonglong(long long value) {
     return sdsnewlen(p,32-(p-buf));
 }
 
-sds sdscatrepr(sds s, char *p, size_t len) {
+sds sdscatrepr(sds s, char *p, size_t len) {  // 拼接上转义后的表示，不过是不是 sds p 会比较好
     s = sdscatlen(s,"\"",1);
     while(len--) {
         switch(*p) {

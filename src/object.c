@@ -210,7 +210,7 @@ int checkType(redisClient *c, robj *o, int type) {
 }
 
 /* Try to encode a string object in order to save space */
-robj *tryObjectEncoding(robj *o) {
+robj *tryObjectEncoding(robj *o) {  // 只"编码"整数long
     long value;
     sds s = o->ptr;
 
@@ -241,13 +241,14 @@ robj *tryObjectEncoding(robj *o) {
      * algorithm to work well. */
     if (server.maxmemory == 0 && value >= 0 && value < REDIS_SHARED_INTEGERS &&
         pthread_equal(pthread_self(),server.mainthread)) {
-        decrRefCount(o);
+        decrRefCount(o);  // 这一套引用计数是为了哪部分功能而添加的，真会共享么
+        // 应该是确实会共享，在作为 value 的时候
         incrRefCount(shared.integers[value]);
         return shared.integers[value];
     } else {
         o->encoding = REDIS_ENCODING_INT;
         sdsfree(o->ptr);
-        o->ptr = (void*) value;
+        o->ptr = (void*) value;  // 整数强行转成指针好暴力啊，不过这么设计也挺合理
         return o;
     }
 }

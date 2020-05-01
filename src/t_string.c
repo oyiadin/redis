@@ -12,6 +12,7 @@ static int checkStringLength(redisClient *c, long long size) {
     return REDIS_OK;
 }
 
+// 现在还没有 XX 标志
 void setGenericCommand(redisClient *c, int nx, robj *key, robj *val, robj *expire) {
     int retval;
     long seconds = 0; /* initialized to avoid an harmness warning */
@@ -46,7 +47,7 @@ void setGenericCommand(redisClient *c, int nx, robj *key, robj *val, robj *expir
 }
 
 void setCommand(redisClient *c) {
-    c->argv[2] = tryObjectEncoding(c->argv[2]);
+    c->argv[2] = tryObjectEncoding(c->argv[2]);  // 只尝试处理value，不会动key
     setGenericCommand(c,0,c->argv[1],c->argv[2],NULL);
 }
 

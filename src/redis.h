@@ -47,6 +47,7 @@
 #define REDIS_MAX_WRITE_PER_EVENT (1024*64)
 #define REDIS_REQUEST_MAX_SIZE (1024*1024*256) /* max bytes in inline command */
 #define REDIS_SHARED_INTEGERS 10000
+// 一万以内的"整数"值会被共享，但是key不会
 #define REDIS_REPLY_CHUNK_BYTES (5*1500) /* 5 TCP packets with default MTU */
 #define REDIS_MAX_LOGMSG_LEN    1024 /* Default maximum length of syslog messages */
 #define REDIS_SLOWLOG_LOG_SLOWER_THAN 10000
@@ -231,9 +232,9 @@ void _redisPanic(char *msg, char *file, int line);
 #define REDIS_LRU_CLOCK_MAX ((1<<21)-1) /* Max value of obj->lru */
 #define REDIS_LRU_CLOCK_RESOLUTION 10 /* LRU clock resolution in seconds */
 typedef struct redisObject {
-    unsigned type:4;
+    unsigned type:4;  // 对外暴露的五种类型
     unsigned storage:2;     /* REDIS_VM_MEMORY or REDIS_VM_SWAPPING */
-    unsigned encoding:4;
+    unsigned encoding:4;  // 内部存储方式
     unsigned lru:22;        /* lru time (relative to server.lruclock) */
     int refcount;
     void *ptr;
