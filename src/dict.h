@@ -55,14 +55,14 @@ typedef struct dictType {
     int (*keyCompare)(void *privdata, const void *key1, const void *key2);
     void (*keyDestructor)(void *privdata, void *key);
     void (*valDestructor)(void *privdata, void *obj);
-} dictType;  // TODO: 对应着每个类型独特的操作，但是具体被用在哪些场景下我还不清楚
+} dictType;  // 对应着每个类型独特的操作
 
 /* This is our hash table structure. Every dictionary has two of this as we
  * implement incremental rehashing, for the old to the new table. */
 typedef struct dictht {
     dictEntry **table;  // table 是一个数组，每个数据项都是指向链表头/NULL，结构类似 HashMap
     unsigned long size;
-    unsigned long sizemask;
+    unsigned long sizemask;  // size-1，这个字段的作用相当于取模
     unsigned long used;
 } dictht;
 
@@ -71,7 +71,7 @@ typedef struct dict {
     void *privdata;
     dictht ht[2];
     int rehashidx; /* rehashing not in progress if rehashidx == -1 */
-    int iterators; /* number of iterators currently running */
+    int iterators; /* number of iterators currently running */  // safe的迭代器计数
 } dict;
 
 /* If safe is set to 1 this is a safe iteartor, that means, you can call

@@ -110,7 +110,7 @@ unsigned int dictGenCaseHashFunction(const unsigned char *buf, int len) {
  * NOTE: This function should only called by ht_destroy(). */
 static void _dictReset(dictht *ht)
 {
-    ht->table = NULL;
+    ht->table = NULL;  // 在 destroy 里边已经先给 free 掉了
     ht->size = 0;
     ht->sizemask = 0;
     ht->used = 0;
@@ -232,7 +232,7 @@ long long timeInMilliseconds(void) {
 }
 
 /* Rehash for an amount of time between ms milliseconds and ms+1 milliseconds */
-int dictRehashMilliseconds(dict *d, int ms) {
+int dictRehashMilliseconds(dict *d, int ms) {  // rehash一毫秒
     long long start = timeInMilliseconds();
     int rehashes = 0;
 
@@ -291,7 +291,7 @@ int dictReplace(dict *d, void *key, void *val)
     dictEntry *entry, auxentry;
 
     /* Try to add the element. If the key
-     * does not exists dictAdd will suceed. */
+     * does not exists dictAdd will succeed. */
     if (dictAdd(d, key, val) == DICT_OK)
         return 1;
     /* It already exists, get the entry */
@@ -304,7 +304,7 @@ int dictReplace(dict *d, void *key, void *val)
      * reverse. */
     auxentry = *entry;
     dictSetHashVal(d, entry, val);
-    dictFreeEntryVal(d, &auxentry);
+    dictFreeEntryVal(d, &auxentry);  // TODO: 奇怪，这里不先判断一下 refcount 么
     return 0;
 }
 
@@ -421,7 +421,7 @@ dictIterator *dictGetIterator(dict *d)
     dictIterator *iter = zmalloc(sizeof(*iter));
 
     iter->d = d;
-    iter->table = 0;
+    iter->table = 0;  // TODO: 咋就直接 table=0 了
     iter->index = -1;
     iter->safe = 0;
     iter->entry = NULL;
