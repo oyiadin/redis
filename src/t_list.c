@@ -260,7 +260,7 @@ void listTypeConvert(robj *subject, int enc) {
 
 void pushGenericCommand(redisClient *c, int where) {
     robj *lobj = lookupKeyWrite(c->db,c->argv[1]);
-    c->argv[2] = tryObjectEncoding(c->argv[2]);
+    c->argv[2] = tryObjectEncoding(c->argv[2]);  // 跟 t_string 一样只编码 value，不编码 key
     if (lobj == NULL) {
         if (handleClientsWaitingListPush(c,c->argv[1],c->argv[2])) {
             addReply(c,shared.cone);
@@ -821,7 +821,7 @@ void unblockClientWaitingData(redisClient *c) {
  * If the function returns 1 there was a client waiting for a list push
  * against this key, the element was passed to this client thus it's not
  * needed to actually add it to the list and the caller should return asap. */
-int handleClientsWaitingListPush(redisClient *c, robj *key, robj *ele) {
+int handleClientsWaitingListPush(redisClient *c, robj *key, robj *ele) {  // TODO
     struct dictEntry *de;
     redisClient *receiver;
     int numclients;

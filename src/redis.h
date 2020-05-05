@@ -374,7 +374,7 @@ struct redisServer {
     long long dirty;            /* changes to DB from the last save */
     long long dirty_before_bgsave; /* used to restore dirty on failed BGSAVE */
     list *clients;
-    dict *commands;             /* Command table hahs table */
+    dict *commands;             /* Command table hash table */
     /* RDB / AOF loading information */
     int loading;
     off_t loading_total_bytes;
